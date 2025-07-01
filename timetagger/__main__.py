@@ -41,6 +41,7 @@ from timetagger.server import (
     enable_service_worker,
 )
 
+from ldap3 import Server, Connection, SUBTREE
 
 # Special hooks exit early
 if __name__ == "__main__" and len(sys.argv) >= 2:
@@ -140,6 +141,8 @@ async def get_webtoken(request):
         return await get_webtoken_usernamepassword(request, auth_info)
     elif method == "proxy":
         return await get_webtoken_proxy(request, auth_info)
+    elif method == "ldap":
+        return await get_webtoken_ldap(request, auth_info)
     else:
         return 401, {}, f"Invalid authentication method: {method}"
 
@@ -176,6 +179,40 @@ async def get_username_from_proxy(request):
 
     return request.headers.get(config.proxy_auth_header.lower(), "").strip()
 
+
+# LDAP - check if user exists (anonymous bind)
+async def find_user_dn(username):
+    server = Server(config.ldap_server)
+    conn = Connection(server, auto_bind=True)
+    search_filter = f"(&(uid={username})(objectClass=posixAccount))"
+    conn.search(config.ldap_base_dn, search_filter, search_scope=SUBTREE)  
+    if conn.entries:
+        return conn.entries[0].entry_dn  
+    return None
+
+# can be used to authenticate with posixAccounts on an LDAP Server.
+async def get_webtoken_ldap(request, auth_info):
+    """An authentication handler to exchange credentials for a webtoken.
+    The Credentials are stored in an LDAP Server in posixAccounts.
+    Used to be able to manage many users easily"""
+
+    user = auth_info.get("username", "").strip()
+    pw = auth_info.get("password", "").strip()
+
+    user_dn = find_user_dn(user)
+    if not user_dn:
+        return 403, {}, "Invalid credentials"
+    try:
+        conn = Connection(Server(config.ldap_server), user=user_dn, password=pw, auto_bind=True)
+        if isinstance(conn, Connection):
+            token = await get_webtoken_unsafe(user)
+            return 200, {}, dict(token=token)
+        else:
+            return 403, {}, "Invalid credentials"
+    except:
+        return 403, {}, "Invalid credentials"
+    
+    
 
 async def get_webtoken_usernamepassword(request, auth_info):
     """An authentication handler to exchange credentials for a webtoken.
