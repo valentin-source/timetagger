@@ -50,6 +50,9 @@ class Config:
         ("proxy_auth_enabled", to_bool, False),
         ("proxy_auth_trusted", str, "127.0.0.1"),
         ("proxy_auth_header", str, "X-Remote-User"),
+        ("ldap_server", str, ""),
+        ("ldap_base_dn", str, ""),
+        ("ldap_enable", to_bool, False),
     ]
     __slots__ = [name for name, _, _ in _ITEMS]
 
