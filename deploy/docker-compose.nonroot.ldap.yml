@@ -10,7 +10,7 @@
 version: "3"
 services:
   timetagger:
-    # build the image using 'docker build -t timetagger:self-modified-version -f repo.nonroot.Dockerfile'
+    # build the image using 'docker build -t timetagger:self-modified-version -f repo.nonroot.Dockerfile .'
     image: timetagger:self-modified-version
     ports:
       - "80:80"
