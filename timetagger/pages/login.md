@@ -46,13 +46,22 @@ async function login_credentials() {
     await login({"method": "usernamepassword", "username": input_u.value, "password": input_p.value});
 }
 
+async function login_ldap() {
+    let input_u = document.getElementById("input_u");
+    let input_p = document.getElementById("input_p");
+    await login({"method": "ldap", "username": input_u.value, "password": input_p.value});
+}
+
 async function load() {
     let but1 = document.getElementById("submit_up");
     let but2 = document.getElementById("submit_localhost");
+    let but3 = document.getElementById("submit_ldap");
     let input_p = document.getElementById("input_p");
+
 
     but1.onclick = login_credentials;
     but2.onclick = login_localhost;
+    but3.onclick = login_ldap;
     input_p.onkeydown = function (e) { if (e.key == "Enter" || e.key == "Return") {login_credentials();} };
 
     if (location.hostname == "localhost" || location.hostname == "127.0.0.1") {
@@ -73,5 +82,7 @@ window.addEventListener('load', load);
 </form>
 <br />
 <button id='submit_localhost' class='whitebutton' style='margin:4px; display: none;' >Login as default user (on localhost)</button>
+<button id='submit_ldap' class='whitebutton' style='margin:4px; display: block;' >Login with LDAP Account</button>
+
 
 <p id='result'></p>
