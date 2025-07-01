@@ -21,7 +21,7 @@ COPY . /opt/timetagger
 # Upgrade pip to the lastest version
 RUN pip --no-cache-dir install pip --upgrade && \
     # Install optional depedencies that make uvicorn faster
-    pip --no-cache-dir install uvicorn uvloop httptools && \
+    pip --no-cache-dir install uvicorn uvloop httptools ldap3 && \
     # Install timetagger depedencies defined via setup.py
     pip install --no-cache-dir --no-warn-script-location -e .
 
